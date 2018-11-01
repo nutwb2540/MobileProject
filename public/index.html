@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsenui.css">
+  <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsen-css-components.min.css">
+  <script src="https://unpkg.com/onsenui/js/onsenui.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+    crossorigin="anonymous"></script>
+  <script src="ejs.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.5.0/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyBXqYGC3aL_ysqzQutzuKEwDXS7FilydJg",
+      authDomain: "shopee-b3d56.firebaseapp.com",
+      databaseURL: "https://shopee-b3d56.firebaseio.com",
+      projectId: "shopee-b3d56",
+      storageBucket: "shopee-b3d56.appspot.com",
+      messagingSenderId: "994533602895"
+    };
+    firebase.initializeApp(config);
+    // Initialize Cloud Firestore through Firebase
+    var db = firebase.firestore();
+    // Disable deprecated features
+    db.settings({
+      timestampsInSnapshots: true
+    });
+  </script>
+  <title>PSU Shopping</title>
+</head>
+
+
+<body>
+  <ons-navigator swipeable id="myNavigator" page="tab3.html">
+  <ons-page>
+    <ons-toolbar>
+      <div class="left">
+        <ons-icon class="toolbaricon" size="30px" icon="fa-shopping-bag">
+        </ons-icon>
+      </div>
+      <div class="center" id="appname">#</div>
+      <div class="right">
+        <ons-icon class="toolbaricon" size="30px" icon="md-help">
+        </ons-icon>
+      </div>
+    </ons-toolbar>
+
+    <ons-tabbar swipeable position="auto">
+      <ons-tab page="tab1.html" label="Home" icon="ion-home, material:md-home" badge="7" active>
+      </ons-tab>
+      <ons-tab page="tab2.html" label="Cart" icon="fa-shopping-cart" active-icon="fa-shopping-cart">
+      </ons-tab>
+      <ons-tab page="tab3.html" label="Products" icon="fa-shopping-cart" active-icon="fa-shopping-cart">
+      </ons-tab>
+    </ons-tabbar>
+  </ons-page>
+</ons-navigator>
+
+  <template id="tab1.html">
+    <ons-page id="Tab1">
+      <p style="text-align: center; margin-top: 10px;">
+        <ons-search-input placeholder="Search" onchange="ons.notification.alert('Searched for: ' + this.value)"></ons-search-input>
+      </p>
+      <ons-carousel swipeable auto-scroll overscrollable id="carousel" style="height: 300px;">
+        <ons-carousel-item id="carousel1" style="background: url('images/1.jpg') no-repeat center; background-size: contain;">
+        </ons-carousel-item>
+        <ons-carousel-item id="carousel2" style="background: url('images/2.jpg') no-repeat center; background-size: contain;">
+        </ons-carousel-item>
+        <ons-carousel-item id="carousel3" style="background: url('images/3.jpg') no-repeat center; background-size: contain;">
+        </ons-carousel-item>
+      </ons-carousel>
+
+      <div id="icons"></div>
+
+      <script id="icon_template" type="text/template">
+        <ons-row style="height:120px" vertical-align="center">  
+        <% categories.forEach(function(category){%>  
+        <ons-col style="background:#66ff99;" width="33%">
+          <p style="text-align: center; margin: 10px;">
+            <ons-icon size="60px" icon="<%= category.icon %>"></ons-icon>
+          </p>
+          <p style="text-align: center; margin: 10px;" id="icon1_text">
+            <%= category.name %>
+          </p>
+        </ons-col>
+        <%});%>
+        </ons-row>
+        </script>
+
+
+    </ons-page>
+  </template>
+
+  <template id="tab2.html">
+      <ons-page id="Tab2">
+        <ons-list-header>SHOPPING CART</ons-list-header>
+  
+        <div id="photo"></div>
+        <div id="showpriceproduct"></div>
+        <script id="photo_template" type="text/template"> 
+                      <% 
+                       cart.forEach(function(cart){
+                       console.log(cart)
+                        %>
+              <div>          
+              <ons-list-item>
+                  <div class="left">
+                      <img class="list-item__thumbnail" src="<%= cart.data().Photo %>">
+                  </div>
+                  <div class="center">
+                      <span class="list-item__title"><%= cart.itemname %></span>
+                      <span class="list-item__subtitle" style="color: blue;"><%= cart.data().price %></span>
+                  </div>
+                  <div class="right">
+   <ons-icon icon="md-delete" onclick="deleteb(<%=num%>); delprice('<%= cart.data().price %>')"></ons-icon></div>
+  </div>
+              </ons-list-item><% });%> 
+   </Script>
+        <ons-button modifier="large">PROCEED TO PAY</ons-button>
+      </ons-page>
+    </template>
+  <template id="tab3.html">
+    <ons-page>
+      <div id="products">
+        <script id="product_template" type="text/template">
+   <ons-row>
+          <% product.forEach(function(product){%>
+  <ons-col width="25%">
+          <img class="" src="<%= product.photo %>" width="99%"height="55%">
+  <%= product.name %>
+  <%= product.type %><br>
+  -<%= product.price %>
+  </ons-col>
+  
+     
+  
+  <%});%> 
+   </ons-row>
+   
+  
+  </Script>
+      </div>
+
+    </ons-page>
+  </template>
+</body>
+<script>
+  getHomeData();
+  document.addEventListener('prechange', function (event) {
+    if (event.index == 0) {
+      console.log('Home clicked');
+      // get data for home screen  
+      getHomeData();
+    } else if (event.index == 1) {
+      console.log('Cart clicked');
+      getData2cart()
+    } else if (event.index == 2) {
+
+      console.log('All product clicked');
+      var name1 = localStorage.getItem('name');
+      console.log("test" + name1)
+      // get data for all product screen  
+      if (name1 == null) {
+        console.log(name1)
+        getproductData();
+      }
+      else {
+
+        getproductData(name1);
+      }
+      localStorage.clear();
+    }
+  });
+
+  function getHomeData() {
+    $.getJSON('home.json', function (data) {
+      var docRef = db.collection("UI").doc("home");
+      docRef.get().then(function (doc) {
+        if (doc.exists) {
+          //Display data
+          console.log("Document data:", doc.data());
+          var data = doc.data();
+          console.log(data.slides[0])
+          $('#appname').html(data.appname);
+          //var style = "background: url('" + data.slides[0] + "') no-repeat center; background-size: contain;'"; 
+          var style = "background: url('images/" + data.slides[0] + "') no-repeat center; background-size: contain;'";
+          $('#carousel1').attr('style', style)
+          var style = "background: url('images/" + data.slides[1] + "') no-repeat center; background-size: contain;'";
+          $('#carousel2').attr('style', style)
+          var style = "background: url('images/" + data.slides[2] + "') no-repeat center; background-size: contain;'";
+          $('#carousel3').attr('style', style)
+          var icon_template = $('#icon_template').html();
+          var html = ejs.render(icon_template, { categories: data.categories });
+          $('#icons').html(html);
+        } else {
+          console.log("No such document!");
+        }
+      }).catch(function (error) {
+        console.log("Error getting document:", error);
+      });
+    })
+  }
+  function getCartData() {
+    $.getJSON('cart.json', function (data) {
+      console.log(data);
+    });
+  }
+  function getproductData() {
+    var docRef = db.collection("UI").doc("product");
+    docRef.get().then(function (doc) {
+      if (doc.exists) {
+
+        console.log("Document data:", doc.data());
+
+        var data = doc.data();
+        var product_template = $('#product_template').html();
+        var html = ejs.render(product_template, { product: data.product });
+        $('#products').html(html);
+
+      } else {
+        // doc.data() will be undefined in this case
+        console.log("No such document!");
+      }
+    }).catch(function (error) {
+      console.log("Error getting document:", error);
+    });
+  }
+</script>
+
+</html>
